@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">DuolingoChallenge</string>
+    <string name="action_settings">Settings</string>
+    <string name="english">English</string>
+    <string name="spanish">Spanish</string>
+    <string name="native_word_intro_1">Find all </string>
+    <string name="native_word_intro_2"> translations for the </string>
+    <string name="native_word_intro_3"> word: </string>
+    <string name="JSON_URL">https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt</string>
+</resources>
