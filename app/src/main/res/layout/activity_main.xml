@@ -27,8 +27,31 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:fabSize="mini"
+        android:contentDescription="@string/fab_cd_new_grid"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_refresh_white_24dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/confirm_fab"
+        android:layout_width="wrap_content"
+        android:contentDescription="@string/fab_cd_check_words"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_check_white_24dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/reset_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/fab_cd_clear_grid"
+        android:animateLayoutChanges="true"
+        app:fabSize="mini"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_clear_white_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>

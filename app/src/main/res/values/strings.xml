@@ -7,4 +7,7 @@
     <string name="native_word_intro_2"> translations for the </string>
     <string name="native_word_intro_3"> word: </string>
     <string name="JSON_URL">https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt</string>
+    <string name="fab_cd_check_words">Check words</string>
+    <string name="fab_cd_clear_grid">Clear grid</string>
+    <string name="fab_cd_new_grid">New grid</string>
 </resources>
