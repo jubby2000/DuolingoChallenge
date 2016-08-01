@@ -3,6 +3,7 @@ package com.example.jacob.duolingochallenge;
 import android.app.ProgressDialog;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -29,13 +30,11 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -43,15 +42,15 @@ public class MainActivity extends AppCompatActivity {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     String url;
-    ArrayList<String> letters;
     TextView introTextView;
     TextView wordTextView;
     ProgressDialog progressDialog;
     String jsonDataString;
     int mColumnsAndRows;
     boolean hintShown = false;
-    //This needs to be -1 to be outside of the gridview range initially
+    //This needs to be -1 to be outside of the grid view range initially
     int downPosition = -1;
+    int totalWordCount = 0;
     FloatingActionButton mClearFab;
     FloatingActionButton mConfirmFab;
 
@@ -75,13 +74,8 @@ public class MainActivity extends AppCompatActivity {
         //request the word bank once the app launches
         new GetWordBank().execute();
 
-//        Animation hideAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_hide);
-//        mClearFab.setVisibility(View.INVISIBLE);
-//        mConfirmFab.setVisibility(View.INVISIBLE);
         mClearFab.hide();
         mConfirmFab.hide();
-//        mClearFab.startAnimation(hideAnimation);
-//        mConfirmFab.startAnimation(hideAnimation);
 
         //We'll use the fab here to get the data manually (if the connection was unstable at first) or to get a new word.
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -110,11 +104,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
-        //TODO add onTouchListeners for each JSON object
-
     }
 
     @Override
@@ -133,6 +122,15 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Snackbar.make(this.findViewById(R.id.gridView), "Hint: Tap letters to unselect.",
+                    Snackbar.LENGTH_LONG)
+                    .setAction("Ok", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            //Leaving this empty serves the dismiss function
+                        }
+                    }).show();
+            hintShown = true;
             return true;
         }
 
@@ -172,9 +170,8 @@ public class MainActivity extends AppCompatActivity {
                 in.close();
 
                 return fullString.toString();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
+                e.printStackTrace();
             }
 
             return null;
@@ -255,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
         String[] newLocation = wordLocations.split(":");
 
         ArrayList<String> finalList = new ArrayList<>();
+        totalWordCount = (newLocation.length)/2;
         for (int i=0; i<newLocation.length; i+=2) {
                 finalList.add(newLocation[i]);
         }
@@ -284,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
         JSONArray jsonArray = jObject.getJSONArray("character_grid");
         mColumnsAndRows = jsonArray.length();
 
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
 
             list.add(jsonArray.getJSONArray(i)
@@ -318,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
                             ColorDrawable cd = (ColorDrawable) textView.getBackground();
                             final int colorSelected = ContextCompat
                                     .getColor(getApplicationContext(),
-                                            android.R.color.holo_green_light);
+                                            R.color.colorPrimaryLight);
 
                             if (cd == null || cd.getColor() != colorSelected) {
                                 textView.setBackgroundColor(colorSelected);
@@ -363,22 +361,24 @@ public class MainActivity extends AppCompatActivity {
 
                                         boolean areEqual = Arrays.deepEquals(fixedList.toArray(), submittedList.toArray());
 
-//                                        if (submittedList.size() != fixedList.size()) {
-//                                            for (int i=0; i<fixedList.size(); i++) {
-//                                                if (!fixedList.contains(submittedList.get(i))) {
-//                                                    Snackbar.make(view, "Nope, that's not quite right.", Snackbar.LENGTH_LONG).show();
-//                                                }
-//                                            }
-//                                            Snackbar.make(view, "Hey, you did it!", Snackbar.LENGTH_LONG).show();
-//                                        } else {
-//                                            Snackbar.make(view, "Nope, that's not quite right.", Snackbar.LENGTH_LONG).show();
-//                                        }
-
-
                                         if (!areEqual) {
                                             Snackbar.make(view, "Nope, that's not quite right.", Snackbar.LENGTH_LONG).show();
                                         } else {
+                                            MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.success);
+                                            mediaPlayer.start();
                                             Snackbar.make(view, "Hey, you did it!", Snackbar.LENGTH_LONG).show();
+                                            mClearFab.hide();
+                                            mConfirmFab.hide();
+                                            JSONObject jObject;
+                                            try {
+                                                jObject = new JSONObject(jsonDataString);
+                                                JSONArray jArray = jObject.getJSONArray("word_bank");
+                                                jObject = getNewRandomWordFromJSONArray(jArray);
+                                                setUpNewViews(jObject);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+
                                         }
 
 
@@ -415,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
                                 ColorDrawable cd = (ColorDrawable) textView.getBackground();
                                 final int colorSelected = ContextCompat
                                         .getColor(getApplicationContext(),
-                                                android.R.color.holo_green_light);
+                                                R.color.colorPrimaryLight);
                                 if (cd == null || cd.getColor() != colorSelected) {
                                     textView.setBackgroundColor(colorSelected);
                                 } else {
@@ -466,7 +466,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String introString = getString(R.string.native_word_intro_1)
-                    + " " + targetLanguage
+                    + " (" + String.valueOf(totalWordCount)
+                    + ") " + targetLanguage
                     + " " + getString(R.string.native_word_intro_2)
                     + " " + sourceLanguage
                     + " " + getString(R.string.native_word_intro_3);
@@ -485,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
         private GridAdapter(final ArrayList<String> letters) {
 
             mCount = letters.size() * mColumnsAndRows;
-            mLetters = new ArrayList<String>(mCount);
+            mLetters = new ArrayList<>(mCount);
             mSelected = false;
 
             // for small size of items it's ok to do it here, sync way
@@ -495,7 +496,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // remove spaces from parts
                 for (String part : parts) {
-                    part.replace(" ", "");
+                    part = part.replace(" ", "");
                     mLetters.add(part);
                 }
             }
@@ -514,18 +515,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public long getItemId(int i) {
             return i;
-        }
-
-        public boolean isSelected() {
-            return mSelected;
-        }
-
-        public void setSelected(boolean selected) {
-            mSelected = selected;
-        }
-
-        public void toggle() {
-            setSelected(!mSelected);
         }
 
         @Override
@@ -550,14 +539,5 @@ public class MainActivity extends AppCompatActivity {
 
             return view;
         }
-    }
-
-    public static boolean deepContains(List<Integer[]> list, Integer[] probe) {
-        for (Integer[] element : list) {
-            if (Arrays.deepEquals(element, probe)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
