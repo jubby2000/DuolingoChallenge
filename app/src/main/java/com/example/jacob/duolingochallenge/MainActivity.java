@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,20 +157,22 @@ public class MainActivity extends AppCompatActivity {
                 URL realUrl = new URL(url);
 
                 //Build a string from the separate JSON lines in the given txt file
-                StringBuilder fullString = new StringBuilder();
+                StringBuilder result = new StringBuilder();
+
+                HttpURLConnection connection = (HttpURLConnection) realUrl.openConnection();
+                connection.setRequestMethod("GET");
 
                 // Read all the text returned by the server
-                BufferedReader in = new BufferedReader(new InputStreamReader(realUrl.openStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
                 //string that we'll iterate over to pass to the string builder
-                String str;
-
-                while ((str = in.readLine()) != null) {
-                    fullString.append(str);
+                String line;
+                while ((line = in.readLine()) != null) {
+                    result.append(line);
                 }
                 in.close();
 
-                return fullString.toString();
+                return result.toString();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -269,6 +272,9 @@ public class MainActivity extends AppCompatActivity {
                 fixedList.add(new int[]{xCoord, yCoord});
             }
         }
+
+        //Source coordinates are ordered by word
+        //we need to sort to match user selection
         Collections.sort(fixedList, new Comparator<int[]>() {
             @Override
             public int compare(int[] ints, int[] t1) {
@@ -347,6 +353,8 @@ public class MainActivity extends AppCompatActivity {
 
                                         }
 
+                                        //Received clicks are ordered from left to right, top to
+                                        //bottom in the grid, we need to sort to match source
                                         Collections.sort(submittedList, new Comparator<int[]>() {
                                             @Override
                                             public int compare(int[] ints, int[] t1) {
